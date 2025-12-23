@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import time
 from datetime import datetime, timedelta
 from typing import Dict
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from jose import jwt, JWTError
 
 from slowapi import Limiter
@@ -47,6 +47,13 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     )
 
 # =========================================================
+# REQUEST MODELS (IMPORTANT FIX)
+# =========================================================
+
+class LicenseRequest(BaseModel):
+    license_key: str
+
+# =========================================================
 # HELPERS
 # =========================================================
 
@@ -81,14 +88,14 @@ def root():
 
 @app.post("/auth")
 @limiter.limit("5/minute")
-def authenticate(request: Request, license_key: str):
+def authenticate(request: Request, body: LicenseRequest):
     """
-    License authentication endpoint
+    License authentication endpoint (JSON BODY)
     """
-    status = license_status(license_key)
+    status = license_status(body.license_key)
 
     token = create_token({
-        "license": license_key,
+        "license": body.license_key,
         "user": status["user"],
     })
 
@@ -117,9 +124,14 @@ def verify_token(request: Request, token: str):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 # =========================================================
-# RUN (DEV MODE)
+# RUN (DEV MODE / RAILWAY COMPATIBLE)
 # =========================================================
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("Blackists:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(
+        "Blackists:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=False
+    )
