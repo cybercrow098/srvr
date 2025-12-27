@@ -19,7 +19,7 @@ from slowapi.middleware import SlowAPIMiddleware
 SECRET_KEY = "super-secret-key-change-this"
 ALGORITHM = "HS256"
 
-LICENSE_START_DATE = datetime(2025, 12, 27)
+LICENSE_START_DATE = datetime(2025, 12, 26)
 LICENSE_VALID_DAYS = 01
 
 LICENSE_DB: Dict[str, str] = {
